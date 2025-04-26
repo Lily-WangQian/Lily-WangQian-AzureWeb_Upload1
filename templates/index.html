@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Files to Azure Storage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+        function addMoreFiles() {
+            const container = document.getElementById('file-container');
+            const inputCount = container.querySelectorAll('input[type="file"]').length;
+            if (inputCount < 10) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.name = 'files';
+                input.required = true;
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = 'Remove File';
+                button.onclick = () => {
+                    container.removeChild(input);
+                    container.removeChild(button);
+                    container.appendChild(document.createElement('br'));
+                };
+
+                container.appendChild(input);
+                container.appendChild(button);
+                container.appendChild(document.createElement('br'));
+            } else {
+                alert("Maximum of 10 files allowed.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Files to Azure Storage</h1>
+
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+            <div id="file-container">
+                <label>Upload PDF Files (Max 10 files):</label><br>
+                <input type="file" name="files" required>
+                <button type="button" onclick="this.previousElementSibling.remove()">Remove File</button><br><br>
+                <input type="file" name="files" required>
+                <button type="button" onclick="this.previousElementSibling.remove()">Remove File</button><br><br>
+            </div>
+
+            <button type="button" onclick="addMoreFiles()">Add More Files</button><br><br>
+            <button type="submit">Upload Files</button>
+        </form>
+
+        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+            <p>Uploading... Please wait.</p>
+        </div>
+
+        {% if error %}
+        <div style="color: red; margin-top: 20px;">{{ error }}</div>
+        {% endif %}
+
+        {% if uploaded_files %}
+        <hr>
+        <h2>Uploaded Files:</h2>
+        <ul>
+            {% for file in uploaded_files %}
+            <li>{{ file }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</body>
+</html>
