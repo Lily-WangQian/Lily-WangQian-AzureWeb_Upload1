@@ -5,34 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Similarity Calculator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script>
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-        }
-    </script>
 </head>
 <body>
     <div class="container">
         <h1>Document Similarity Calculator</h1>
 
-        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+        <form action="/upload" method="post" enctype="multipart/form-data">
             <label>Upload PDF Files (Max 10 files):</label><br>
             <input type="file" name="files" multiple required><br><br>
             <button type="submit">Upload Files</button>
         </form>
 
-        {% if uploaded_files %}
-        <form action="/calculate" method="post" onsubmit="showLoading()">
-            {% for file in uploaded_files %}
-                <input type="hidden" name="uploaded_files" value="{{ file }}">
+        {% if uploaded_filenames %}
+        <h2>Uploaded Files:</h2>
+        <ul>
+            {% for file in uploaded_filenames %}
+            <li>{{ file }}</li>
+            {% endfor %}
+        </ul>
+
+        <form action="/calculate" method="post">
+            {% for file in uploaded_filenames %}
+            <input type="hidden" name="uploaded_files" value="{{ file }}">
             {% endfor %}
             <button type="submit">Calculate Similarity</button>
         </form>
         {% endif %}
-
-        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
-            <p>Processing... Please wait.</p>
-        </div>
 
         {% if error %}
         <div style="color: red; margin-top: 20px;">{{ error }}</div>

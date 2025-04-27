@@ -2,15 +2,18 @@ import os
 import re
 import tempfile
 import pdfplumber
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 from azure.storage.blob import BlobServiceClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = './uploads'
+app.config['UPLOAD_FOLDER'] = './temp_uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
+
+# Ensure temp folder exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Load Azure Blob Storage
 AZURE_CONNECTION_STRING = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
@@ -26,15 +29,9 @@ else:
 # Custom stopwords
 custom_stopwords = {'the', 'and', 'to', 'of', 'a', 'in', 'that', 'is', 'on', 'for', 'with', 'as', 'by', 'it', 'an'}
 
-# Helper Functions
+# Helper functions
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-def extract_text_from_pdf(pdf_path):
-    """Extract and clean text from a PDF file given local path."""
-    with pdfplumber.open(pdf_path) as pdf:
-        text = ' '.join(page.extract_text() for page in pdf.pages if page.extract_text())
-    return clean_text(text)
 
 def clean_text(text):
     """Clean and preprocess extracted text."""
@@ -42,6 +39,12 @@ def clean_text(text):
     text = re.sub(r'[\r\n]+', ' ', text)
     text = ' '.join(word for word in text.split() if word.lower() not in custom_stopwords)
     return text.strip()
+
+def extract_text_from_pdf(pdf_path):
+    """Extract and clean text from a local PDF file."""
+    with pdfplumber.open(pdf_path) as pdf:
+        text = ' '.join(page.extract_text() for page in pdf.pages if page.extract_text())
+    return clean_text(text)
 
 def extract_tfidf_keywords(text, top_n=5):
     """Extract top TF-IDF keywords."""
@@ -52,47 +55,49 @@ def extract_tfidf_keywords(text, top_n=5):
 # Routes
 @app.route('/')
 def index():
-    return render_template('index.html', uploaded_files=[], keyword_results=None, error=None)
+    return render_template('index.html', uploaded_filenames=[], keyword_results=None, error=None)
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
-    if container_client is None:
-        return render_template('index.html', error="Azure Storage connection not configured.")
-
     files = request.files.getlist('files')
-    if not files:
-        return render_template('index.html', error="No files selected.")
 
-    uploaded_files = []
+    if not files:
+        return render_template('index.html', uploaded_filenames=[], error="No files selected.", keyword_results=None)
+
+    uploaded_filenames = []
 
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            blob_client = container_client.get_blob_client(filename)
-            blob_client.upload_blob(file.read(), overwrite=True)
-            uploaded_files.append(filename)
+            local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(local_path)
+            uploaded_filenames.append(filename)
 
-    return render_template('index.html', uploaded_files=uploaded_files, keyword_results=None, error=None)
+    return render_template('index.html', uploaded_filenames=uploaded_filenames, keyword_results=None, error=None)
 
 @app.route('/calculate', methods=['POST'])
 def calculate_similarity():
-    if container_client is None:
-        return render_template('index.html', error="Azure Storage connection not configured.")
+    filenames = request.form.getlist('uploaded_files')
+    if not filenames:
+        return render_template('index.html', error="No files found to process.", uploaded_filenames=[], keyword_results=None)
 
-    uploaded_files = request.form.getlist('uploaded_files')
-    if not uploaded_files:
-        return render_template('index.html', error="No uploaded files found.")
+    if container_client is None:
+        return render_template('index.html', error="Azure Storage not configured.", uploaded_filenames=[], keyword_results=None)
 
     keyword_results = []
 
-    for filename in uploaded_files:
-        blob_client = container_client.get_blob_client(filename)
-        temp = tempfile.NamedTemporaryFile(delete=False)
-        blob_data = blob_client.download_blob()
-        temp.write(blob_data.readall())
-        temp.close()
+    for filename in filenames:
+        local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        cleaned_text = extract_text_from_pdf(temp.name)
+        # Upload file to Azure Storage
+        blob_client = container_client.get_blob_client(filename)
+        with open(local_path, "rb") as data:
+            blob_client.upload_blob(data, overwrite=True)
+
+        # Extract and clean text
+        cleaned_text = extract_text_from_pdf(local_path)
+
+        # Extract TF-IDF keywords
         tfidf_keywords = extract_tfidf_keywords(cleaned_text)
 
         keyword_results.append({
@@ -100,9 +105,10 @@ def calculate_similarity():
             'tfidf_keywords': tfidf_keywords
         })
 
-        os.remove(temp.name)
+        # Remove the local temp file
+        os.remove(local_path)
 
-    return render_template('index.html', uploaded_files=uploaded_files, keyword_results=keyword_results, error=None)
+    return render_template('index.html', uploaded_filenames=[], keyword_results=keyword_results, error=None)
 
 if __name__ == '__main__':
     app.run(debug=True)
