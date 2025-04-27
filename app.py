@@ -2,13 +2,14 @@ import os
 import re
 import tempfile
 import pdfplumber
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from azure.storage.blob import BlobServiceClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Initialize Flask app
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = './uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
 
 # Load Azure Blob Storage
@@ -29,9 +30,9 @@ custom_stopwords = {'the', 'and', 'to', 'of', 'a', 'in', 'that', 'is', 'on', 'fo
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-def extract_text_from_pdf(pdf_bytes):
-    """Extract and clean text from a PDF file given bytes."""
-    with pdfplumber.open(pdf_bytes) as pdf:
+def extract_text_from_pdf(pdf_path):
+    """Extract and clean text from a PDF file given local path."""
+    with pdfplumber.open(pdf_path) as pdf:
         text = ' '.join(page.extract_text() for page in pdf.pages if page.extract_text())
     return clean_text(text)
 
@@ -51,7 +52,7 @@ def extract_tfidf_keywords(text, top_n=5):
 # Routes
 @app.route('/')
 def index():
-    return render_template('index.html', uploaded_files=None, keyword_results=None, error=None)
+    return render_template('index.html', uploaded_files=[], keyword_results=None, error=None)
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
@@ -63,36 +64,43 @@ def upload_files():
         return render_template('index.html', error="No files selected.")
 
     uploaded_files = []
-    keyword_results = []
 
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-
-            # Upload file to Azure Blob
             blob_client = container_client.get_blob_client(filename)
             blob_client.upload_blob(file.read(), overwrite=True)
             uploaded_files.append(filename)
 
-            # Download the file back temporarily to process
-            temp = tempfile.NamedTemporaryFile(delete=False)
-            blob_data = blob_client.download_blob()
-            temp.write(blob_data.readall())
-            temp.close()
+    return render_template('index.html', uploaded_files=uploaded_files, keyword_results=None, error=None)
 
-            # Extract text and keywords
-            with pdfplumber.open(temp.name) as pdf:
-                full_text = ' '.join(page.extract_text() for page in pdf.pages if page.extract_text())
-            cleaned_text = clean_text(full_text)
-            tfidf_keywords = extract_tfidf_keywords(cleaned_text)
+@app.route('/calculate', methods=['POST'])
+def calculate_similarity():
+    if container_client is None:
+        return render_template('index.html', error="Azure Storage connection not configured.")
 
-            keyword_results.append({
-                'filename': filename,
-                'tfidf_keywords': tfidf_keywords
-            })
+    uploaded_files = request.form.getlist('uploaded_files')
+    if not uploaded_files:
+        return render_template('index.html', error="No uploaded files found.")
 
-            # Delete temporary file
-            os.remove(temp.name)
+    keyword_results = []
+
+    for filename in uploaded_files:
+        blob_client = container_client.get_blob_client(filename)
+        temp = tempfile.NamedTemporaryFile(delete=False)
+        blob_data = blob_client.download_blob()
+        temp.write(blob_data.readall())
+        temp.close()
+
+        cleaned_text = extract_text_from_pdf(temp.name)
+        tfidf_keywords = extract_tfidf_keywords(cleaned_text)
+
+        keyword_results.append({
+            'filename': filename,
+            'tfidf_keywords': tfidf_keywords
+        })
+
+        os.remove(temp.name)
 
     return render_template('index.html', uploaded_files=uploaded_files, keyword_results=keyword_results, error=None)
 

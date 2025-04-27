@@ -3,36 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Files to Azure Storage</title>
+    <title>Document Similarity Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+    </script>
 </head>
 <body>
-    <h1>Upload Files to Azure Storage</h1>
+    <div class="container">
+        <h1>Document Similarity Calculator</h1>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="files" multiple required><br><br>
-        <button type="submit">Upload Files</button>
-    </form>
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+            <label>Upload PDF Files (Max 10 files):</label><br>
+            <input type="file" name="files" multiple required><br><br>
+            <button type="submit">Upload Files</button>
+        </form>
 
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
-
-    {% if uploaded_files %}
-        <h2>Uploaded Files:</h2>
-        <ul>
+        {% if uploaded_files %}
+        <form action="/calculate" method="post" onsubmit="showLoading()">
             {% for file in uploaded_files %}
-            <li>{{ file }}</li>
+                <input type="hidden" name="uploaded_files" value="{{ file }}">
             {% endfor %}
-        </ul>
-    {% endif %}
+            <button type="submit">Calculate Similarity</button>
+        </form>
+        {% endif %}
 
-    {% if keyword_results %}
+        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+            <p>Processing... Please wait.</p>
+        </div>
+
+        {% if error %}
+        <div style="color: red; margin-top: 20px;">{{ error }}</div>
+        {% endif %}
+
+        {% if keyword_results %}
         <h2>TF-IDF Keywords:</h2>
         <ul>
             {% for result in keyword_results %}
-                <li><strong>{{ result.filename }}</strong>: {{ result.tfidf_keywords }}</li>
+            <li><strong>{{ result.filename }}</strong>: {{ result.tfidf_keywords|join(', ') }}</li>
             {% endfor %}
         </ul>
-    {% endif %}
+        {% endif %}
+    </div>
 </body>
 </html>
