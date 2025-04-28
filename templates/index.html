@@ -44,10 +44,10 @@
     <div class="container">
         <h1>Document Similarity Calculator</h1>
 
-        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+        <form action="/calculate" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
             <div id="file-container">
                 <label>Upload PDF Files (2 to 10 files):</label><br>
-                
+
                 <input type="file" name="files" required>
                 <button type="button" onclick="this.previousElementSibling.remove(); this.remove();">Remove File</button><br><br>
 
@@ -56,21 +56,12 @@
             </div>
 
             <button type="button" onclick="addMoreFiles()">Add More Documents</button><br><br>
-            <button type="submit">Upload Files</button>
+            <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
         </form>
 
         <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
             <p>Processing... Please wait.</p>
         </div>
-
-        {% if uploaded_filenames %}
-        <form action="/calculate" method="post" onsubmit="showLoading()">
-            {% for file in uploaded_filenames %}
-            <input type="hidden" name="uploaded_files" value="{{ file }}">
-            {% endfor %}
-            <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
-        </form>
-        {% endif %}
 
         {% if error %}
         <div style="color: red; text-align: center; margin-top: 20px;">
