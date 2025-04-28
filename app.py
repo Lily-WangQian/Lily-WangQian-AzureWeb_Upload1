@@ -2,18 +2,14 @@ import os
 import re
 import tempfile
 import pdfplumber
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from azure.storage.blob import BlobServiceClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = './temp_uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
-
-# Ensure temp folder exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Azure Blob Storage
 AZURE_CONNECTION_STRING = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
@@ -39,8 +35,8 @@ def clean_text(text):
     text = ' '.join(word for word in text.split() if word.lower() not in custom_stopwords)
     return text.strip()
 
-def extract_text_from_pdf(path):
-    with pdfplumber.open(path) as pdf:
+def extract_text_from_pdf(file_path):
+    with pdfplumber.open(file_path) as pdf:
         text = ' '.join(page.extract_text() for page in pdf.pages if page.extract_text())
     return clean_text(text)
 
@@ -52,35 +48,27 @@ def extract_tfidf_keywords(text, top_n=5):
 # Routes
 @app.route('/')
 def index():
-    uploaded_files = os.listdir(app.config['UPLOAD_FOLDER'])
-    uploaded_files = [f for f in uploaded_files if allowed_file(f)]
-    return render_template('index.html', uploaded_filenames=uploaded_files, keyword_results=None, error=None)
+    blobs = []
+    if container_client:
+        blobs = [blob.name for blob in container_client.list_blobs()]
+    return render_template('index.html', uploaded_filenames=blobs, keyword_results=None, error=None)
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
     files = request.files.getlist('files')
 
-    if len(files) < 2 or len(files) > 10:
-        return render_template('index.html', uploaded_filenames=[], error="Upload between 2 and 10 PDF files.", keyword_results=None)
+    if not (2 <= len(files) <= 10):
+        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Please upload between 2 and 10 PDF files.")
 
-    uploaded_filenames = []
+    if container_client is None:
+        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Azure Storage not configured.")
 
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(save_path)
-            uploaded_filenames.append(filename)
+            blob_client = container_client.get_blob_client(filename)
+            blob_client.upload_blob(file.read(), overwrite=True)
 
-    return redirect(url_for('index'))
-
-@app.route('/remove', methods=['POST'])
-def remove_file():
-    filename = request.form.get('filename')
-    if filename:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        if os.path.exists(file_path):
-            os.remove(file_path)
     return redirect(url_for('index'))
 
 @app.route('/calculate', methods=['POST'])
@@ -88,23 +76,24 @@ def calculate_similarity():
     filenames = request.form.getlist('uploaded_files')
 
     if not filenames or len(filenames) < 2:
-        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="At least 2 documents are required.")
+        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Please select at least 2 documents.")
 
     if container_client is None:
-        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Azure connection missing.")
+        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Azure Storage not configured.")
 
     keyword_results = []
 
     for filename in filenames:
-        local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-        # Upload to Azure
         blob_client = container_client.get_blob_client(filename)
-        with open(local_path, "rb") as data:
-            blob_client.upload_blob(data, overwrite=True)
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+
+        # Download blob to temp file
+        download_stream = blob_client.download_blob()
+        temp_file.write(download_stream.readall())
+        temp_file.close()
 
         # Clean and extract
-        cleaned_text = extract_text_from_pdf(local_path)
+        cleaned_text = extract_text_from_pdf(temp_file.name)
         tfidf_keywords = extract_tfidf_keywords(cleaned_text)
 
         keyword_results.append({
@@ -112,10 +101,10 @@ def calculate_similarity():
             'tfidf_keywords': tfidf_keywords
         })
 
-        # Remove temp file
-        os.remove(local_path)
+        os.remove(temp_file.name)
 
-    return render_template('index.html', uploaded_filenames=[], keyword_results=keyword_results, error=None)
+    blobs = [blob.name for blob in container_client.list_blobs()]
+    return render_template('index.html', uploaded_filenames=blobs, keyword_results=keyword_results, error=None)
 
 if __name__ == '__main__':
     app.run(debug=True)

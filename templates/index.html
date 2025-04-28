@@ -9,72 +9,29 @@
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
         }
-
-        function addMoreFiles() {
-            const container = document.getElementById('file-container');
-            const inputCount = container.querySelectorAll('input[type="file"]').length;
-            if (inputCount >= 10) {
-                alert("Maximum 10 files allowed.");
-                return;
-            }
-
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.name = 'files';
-            input.required = true;
-
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.textContent = 'Remove File';
-            button.onclick = function () {
-                container.removeChild(input);
-                container.removeChild(button);
-                container.removeChild(br);
-            };
-
-            const br = document.createElement('br');
-
-            container.appendChild(input);
-            container.appendChild(button);
-            container.appendChild(br);
-        }
     </script>
 </head>
 <body>
     <div class="container">
         <h1>Document Similarity Calculator</h1>
 
-        <!-- First Form: Upload files -->
+        <!-- Upload Form -->
         <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-            <div id="file-container">
-                <label>Upload PDF Files (2 to 10 files):</label><br>
-
-                <input type="file" name="files" required>
-                <button type="button" onclick="this.previousElementSibling.remove(); this.remove();">Remove File</button><br><br>
-
-                <input type="file" name="files" required>
-                <button type="button" onclick="this.previousElementSibling.remove(); this.remove();">Remove File</button><br><br>
-            </div>
-
-            <button type="button" onclick="addMoreFiles()">Add More Documents</button><br><br>
+            <label>Upload PDF Files (2 to 10 files):</label><br><br>
+            <input type="file" name="files" multiple required><br><br>
             <button type="submit" style="background-color:blue; color:white;">Upload Files</button>
         </form>
 
         <br><hr><br>
 
-        <!-- Second Form: Calculate Similarity -->
+        <!-- Show Uploaded Files and Calculate -->
         {% if uploaded_filenames %}
-        <h2>Uploaded Files:</h2>
-        <ul>
-            {% for file in uploaded_filenames %}
-            <li>{{ file }}</li>
-            {% endfor %}
-        </ul>
-
+        <h2>Uploaded Files in Azure:</h2>
         <form action="/calculate" method="post" onsubmit="showLoading()">
             {% for file in uploaded_filenames %}
-            <input type="hidden" name="uploaded_files" value="{{ file }}">
+            <input type="checkbox" name="uploaded_files" value="{{ file }}" checked> {{ file }}<br>
             {% endfor %}
+            <br>
             <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
         </form>
         {% endif %}
