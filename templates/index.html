@@ -11,7 +11,7 @@
         <h1>Document Similarity Calculator</h1>
 
         <form action="/upload" method="post" enctype="multipart/form-data">
-            <label>Upload PDF Files (2 to 10 files):</label><br>
+            <label>Upload Documents (2 to 10 files):</label><br>
             <input type="file" name="files" multiple required><br><br>
             <button type="submit">Upload Files</button>
         </form>
@@ -24,7 +24,7 @@
                 {{ file }}
                 <form action="/remove" method="post" style="display:inline;">
                     <input type="hidden" name="filename" value="{{ file }}">
-                    <button type="submit" style="background-color:red; color:white;">Remove</button>
+                    <button type="submit" style="background:red; color:white;">Remove</button>
                 </form>
             </li>
             {% endfor %}
@@ -39,7 +39,7 @@
         {% endif %}
 
         {% if error %}
-        <div style="color: red; margin-top: 20px;">{{ error }}</div>
+        <div style="color: red;">{{ error }}</div>
         {% endif %}
 
         {% if keyword_results %}
