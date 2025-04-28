@@ -44,7 +44,8 @@
     <div class="container">
         <h1>Document Similarity Calculator</h1>
 
-        <form action="/calculate" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+        <!-- First Form: Upload files -->
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
             <div id="file-container">
                 <label>Upload PDF Files (2 to 10 files):</label><br>
 
@@ -56,8 +57,27 @@
             </div>
 
             <button type="button" onclick="addMoreFiles()">Add More Documents</button><br><br>
+            <button type="submit" style="background-color:blue; color:white;">Upload Files</button>
+        </form>
+
+        <br><hr><br>
+
+        <!-- Second Form: Calculate Similarity -->
+        {% if uploaded_filenames %}
+        <h2>Uploaded Files:</h2>
+        <ul>
+            {% for file in uploaded_filenames %}
+            <li>{{ file }}</li>
+            {% endfor %}
+        </ul>
+
+        <form action="/calculate" method="post" onsubmit="showLoading()">
+            {% for file in uploaded_filenames %}
+            <input type="hidden" name="uploaded_files" value="{{ file }}">
+            {% endfor %}
             <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
         </form>
+        {% endif %}
 
         <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
             <p>Processing... Please wait.</p>
