@@ -11,7 +11,7 @@
         <h1>Document Similarity Calculator</h1>
 
         <form action="/upload" method="post" enctype="multipart/form-data">
-            <label>Upload PDF Files (Max 10 files):</label><br>
+            <label>Upload PDF Files (2 to 10 files):</label><br>
             <input type="file" name="files" multiple required><br><br>
             <button type="submit">Upload Files</button>
         </form>
@@ -20,7 +20,13 @@
         <h2>Uploaded Files:</h2>
         <ul>
             {% for file in uploaded_filenames %}
-            <li>{{ file }}</li>
+            <li>
+                {{ file }}
+                <form action="/remove" method="post" style="display:inline;">
+                    <input type="hidden" name="filename" value="{{ file }}">
+                    <button type="submit" style="background-color:red; color:white;">Remove</button>
+                </form>
+            </li>
             {% endfor %}
         </ul>
 

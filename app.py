@@ -2,7 +2,7 @@ import os
 import re
 import tempfile
 import pdfplumber
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from azure.storage.blob import BlobServiceClient
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -29,25 +29,22 @@ else:
 # Custom stopwords
 custom_stopwords = {'the', 'and', 'to', 'of', 'a', 'in', 'that', 'is', 'on', 'for', 'with', 'as', 'by', 'it', 'an'}
 
-# Helper functions
+# Helper Functions
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 def clean_text(text):
-    """Clean and preprocess extracted text."""
     text = re.sub(r'\s+', ' ', text)
     text = re.sub(r'[\r\n]+', ' ', text)
     text = ' '.join(word for word in text.split() if word.lower() not in custom_stopwords)
     return text.strip()
 
 def extract_text_from_pdf(pdf_path):
-    """Extract and clean text from a local PDF file."""
     with pdfplumber.open(pdf_path) as pdf:
         text = ' '.join(page.extract_text() for page in pdf.pages if page.extract_text())
     return clean_text(text)
 
 def extract_tfidf_keywords(text, top_n=5):
-    """Extract top TF-IDF keywords."""
     vectorizer = TfidfVectorizer(stop_words='english', max_features=top_n)
     tfidf_matrix = vectorizer.fit_transform([text])
     return vectorizer.get_feature_names_out()
@@ -61,35 +58,47 @@ def index():
 def upload_files():
     files = request.files.getlist('files')
 
-    if not files:
-        return render_template('index.html', uploaded_filenames=[], error="No files selected.", keyword_results=None)
+    if len(files) < 2 or len(files) > 10:
+        return render_template('index.html', uploaded_filenames=[], error="Please upload between 2 and 10 PDF files.", keyword_results=None)
 
     uploaded_filenames = []
 
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(local_path)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
             uploaded_filenames.append(filename)
 
     return render_template('index.html', uploaded_filenames=uploaded_filenames, keyword_results=None, error=None)
 
+@app.route('/remove', methods=['POST'])
+def remove_file():
+    filename = request.form.get('filename')
+    if filename:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    uploaded_files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if allowed_file(f)]
+
+    return render_template('index.html', uploaded_filenames=uploaded_files, keyword_results=None, error=None)
+
 @app.route('/calculate', methods=['POST'])
 def calculate_similarity():
     filenames = request.form.getlist('uploaded_files')
-    if not filenames:
-        return render_template('index.html', error="No files found to process.", uploaded_filenames=[], keyword_results=None)
+    if not filenames or len(filenames) < 2:
+        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Need at least 2 documents to calculate similarity.")
 
     if container_client is None:
-        return render_template('index.html', error="Azure Storage not configured.", uploaded_filenames=[], keyword_results=None)
+        return render_template('index.html', uploaded_filenames=[], keyword_results=None, error="Azure Storage connection not configured.")
 
     keyword_results = []
 
     for filename in filenames:
         local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        # Upload file to Azure Storage
+        # Upload to Azure Storage
         blob_client = container_client.get_blob_client(filename)
         with open(local_path, "rb") as data:
             blob_client.upload_blob(data, overwrite=True)
