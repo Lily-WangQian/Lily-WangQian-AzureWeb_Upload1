@@ -9,6 +9,36 @@
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
         }
+
+        function addMoreFiles() {
+            const container = document.getElementById('file-container');
+            const inputCount = container.querySelectorAll('input[type="file"]').length;
+            if (inputCount >= 10) {
+                alert("Maximum 10 files allowed.");
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.style.marginBottom = '10px';
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.name = 'files';
+            input.required = true;
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.textContent = 'Remove File';
+            removeButton.style.marginLeft = '10px';
+            removeButton.onclick = function () {
+                container.removeChild(wrapper);
+            };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(removeButton);
+
+            container.appendChild(wrapper);
+        }
     </script>
 </head>
 <body>
@@ -17,14 +47,32 @@
 
         <!-- Upload Form -->
         <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-            <label>Upload PDF Files (2 to 10 files):</label><br><br>
-            <input type="file" name="files" multiple required><br><br>
+            <div id="file-container">
+                <label>Upload PDF Files (2 to 10 files):</label><br><br>
+
+                <!-- Start with two upload inputs -->
+                <div style="margin-bottom: 10px;">
+                    <input type="file" name="files" required>
+                    <button type="button" onclick="this.parentNode.remove()">Remove File</button>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <input type="file" name="files" required>
+                    <button type="button" onclick="this.parentNode.remove()">Remove File</button>
+                </div>
+            </div>
+
+            <button type="button" onclick="addMoreFiles()">Add More Documents</button><br><br>
             <button type="submit" style="background-color:blue; color:white;">Upload Files</button>
         </form>
 
+        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+            <p>Processing... Please wait.</p>
+        </div>
+
         <br><hr><br>
 
-        <!-- Show Uploaded Files and Calculate -->
+        <!-- After Upload -->
         {% if uploaded_filenames %}
         <h2>Uploaded Files in Azure:</h2>
         <form action="/calculate" method="post" onsubmit="showLoading()">
@@ -35,10 +83,6 @@
             <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
         </form>
         {% endif %}
-
-        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
-            <p>Processing... Please wait.</p>
-        </div>
 
         {% if error %}
         <div style="color: red; text-align: center; margin-top: 20px;">
