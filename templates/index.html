@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Similarity Calculator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Document Similarity Calculator</h1>
 
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <label>Upload Documents (2 to 10 files):</label><br>
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+            <label>Upload PDF Files (2 to 10 files):</label><br>
             <input type="file" name="files" multiple required><br><br>
             <button type="submit">Upload Files</button>
         </form>
@@ -24,31 +29,49 @@
                 {{ file }}
                 <form action="/remove" method="post" style="display:inline;">
                     <input type="hidden" name="filename" value="{{ file }}">
-                    <button type="submit" style="background:red; color:white;">Remove</button>
+                    <button type="submit" style="background-color:red; color:white;">Remove File</button>
                 </form>
             </li>
             {% endfor %}
         </ul>
 
-        <form action="/calculate" method="post">
+        <form action="/calculate" method="post" onsubmit="showLoading()">
             {% for file in uploaded_filenames %}
             <input type="hidden" name="uploaded_files" value="{{ file }}">
             {% endfor %}
-            <button type="submit">Calculate Similarity</button>
+            <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
         </form>
         {% endif %}
 
+        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+            <p>Processing... Please wait.</p>
+        </div>
+
         {% if error %}
-        <div style="color: red;">{{ error }}</div>
+        <div style="color: red; text-align: center; margin-top: 20px;">
+            <p>{{ error }}</p>
+        </div>
         {% endif %}
 
         {% if keyword_results %}
-        <h2>TF-IDF Keywords:</h2>
-        <ul>
-            {% for result in keyword_results %}
-            <li><strong>{{ result.filename }}</strong>: {{ result.tfidf_keywords|join(', ') }}</li>
-            {% endfor %}
-        </ul>
+        <hr>
+        <h2>TF-IDF Keywords Extracted</h2>
+        <table border="1" style="width: 100%; text-align: left;">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>TF-IDF Keywords</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in keyword_results %}
+                <tr>
+                    <td>{{ result.filename }}</td>
+                    <td>{{ result.tfidf_keywords|join(', ') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% endif %}
     </div>
 </body>
