@@ -8,8 +8,11 @@ app = Flask(__name__)
 CSV_FILE = 'banks and banks detailed similarity score.csv'
 similarity_df = pd.read_csv(CSV_FILE, index_col=0)
 
-# Get list of banks from the CSV header (columns) and index (rows)
-banks = list(similarity_df.columns)
+# Ensure index and columns are string (avoid integer key errors)
+similarity_df.index = similarity_df.index.astype(str)
+similarity_df.columns = similarity_df.columns.astype(str)
+
+banks = similarity_df.index.tolist()
 
 @app.route('/')
 def index():

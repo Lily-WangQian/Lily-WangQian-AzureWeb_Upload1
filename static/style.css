@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: #f4f4f9;
+    background-color: #f0f2f5;
     color: #333;
 }
 
@@ -13,22 +13,28 @@ h1, h2 {
 
 form {
     max-width: 500px;
-    margin: 20px auto;
+    margin: 30px auto;
     padding: 20px;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
+select, button {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
 button {
-    padding: 10px 15px;
     background-color: #3498db;
     color: white;
     border: none;
-    border-radius: 5px;
-    font-size: 16px;
     cursor: pointer;
 }
 
@@ -36,12 +42,29 @@ button:hover {
     background-color: #2980b9;
 }
 
-table {
+.result-box {
+    max-width: 500px;
     margin: 20px auto;
-    border-collapse: collapse;
+    padding: 20px;
+    background: #dff0d8;
+    border: 1px solid #d6e9c6;
+    border-radius: 8px;
+    color: #3c763d;
+    text-align: center;
 }
 
-th, td {
-    padding: 10px;
-    text-align: left;
+.score {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.error-box {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f2dede;
+    border: 1px solid #ebccd1;
+    border-radius: 8px;
+    color: #a94442;
+    text-align: center;
 }

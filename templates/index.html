@@ -3,35 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Bank Similarity Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>Bank Similarity Calculator</h1>
 
     <form action="/calculate" method="post">
-        <label>Select First Bank:</label>
+        <label for="bank1">Select First Bank:</label><br>
         <select name="bank1" required>
+            <option value="">-- Select Bank --</option>
             {% for bank in banks %}
             <option value="{{ bank }}">{{ bank }}</option>
             {% endfor %}
-        </select>
+        </select><br><br>
 
-        <label>Select Second Bank:</label>
+        <label for="bank2">Select Second Bank:</label><br>
         <select name="bank2" required>
+            <option value="">-- Select Bank --</option>
             {% for bank in banks %}
             <option value="{{ bank }}">{{ bank }}</option>
             {% endfor %}
-        </select>
+        </select><br><br>
 
         <button type="submit">Calculate Similarity</button>
     </form>
 
     {% if similarity_result %}
-    <h2>Similarity Result</h2>
-    <p>{{ similarity_result.bank1 }} and {{ similarity_result.bank2 }} → Score: {{ similarity_result.score }}</p>
+    <div class="result-box">
+        <h2>Similarity Result</h2>
+        <p><strong>{{ similarity_result.bank1 }}</strong> and <strong>{{ similarity_result.bank2 }}</strong></p>
+        <p>Similarity Score: <span class="score">{{ similarity_result.score }}</span></p>
+    </div>
     {% endif %}
 
     {% if error %}
-    <p style="color: red;">{{ error }}</p>
+    <div class="error-box">
+        <p>{{ error }}</p>
+    </div>
     {% endif %}
 </body>
 </html>
