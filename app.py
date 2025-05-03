@@ -4,11 +4,15 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Load CSV: use 'Banks' column as row index
+# Load CSV and clean up 'Unnamed: 0' if present
 CSV_FILE = 'banks and banks detailed similarity score.csv'
 similarity_df = pd.read_csv(CSV_FILE, index_col='Banks')
 
-# Get bank names from both index and columns
+# Drop unnecessary columns if they exist
+if 'Unnamed: 0' in similarity_df.columns:
+    similarity_df = similarity_df.drop(columns=['Unnamed: 0'])
+
+# Get list of bank names from the cleaned DataFrame
 banks = similarity_df.columns.tolist()
 
 @app.route('/')
