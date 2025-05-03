@@ -1,24 +1,22 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
     background-color: #f0f2f5;
     color: #333;
+    padding: 20px;
 }
 
-h1, h2 {
+h1, h2, h3 {
     text-align: center;
     color: #2c3e50;
 }
 
 form {
-    max-width: 500px;
-    margin: 30px auto;
-    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
     background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     text-align: center;
 }
 
@@ -26,15 +24,14 @@ select, button {
     width: 80%;
     padding: 10px;
     margin: 10px 0;
+    font-size: 16px;
     border-radius: 5px;
     border: 1px solid #ccc;
-    font-size: 16px;
 }
 
 button {
     background-color: #3498db;
-    color: white;
-    border: none;
+    color: #fff;
     cursor: pointer;
 }
 
@@ -43,13 +40,12 @@ button:hover {
 }
 
 .result-box {
-    max-width: 500px;
+    max-width: 600px;
     margin: 20px auto;
-    padding: 20px;
     background: #dff0d8;
+    padding: 15px;
     border: 1px solid #d6e9c6;
     border-radius: 8px;
-    color: #3c763d;
     text-align: center;
 }
 
@@ -58,13 +54,45 @@ button:hover {
     font-weight: bold;
 }
 
+.comparison-tables {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.table-section {
+    width: 45%;
+    background: #fff;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
 .error-box {
-    max-width: 500px;
+    max-width: 600px;
     margin: 20px auto;
-    padding: 20px;
     background: #f2dede;
+    padding: 15px;
     border: 1px solid #ebccd1;
     border-radius: 8px;
-    color: #a94442;
     text-align: center;
+    color: #a94442;
 }
