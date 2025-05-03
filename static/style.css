@@ -1,63 +1,65 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f6f8;
+    background-color: #f5f7fa;
     margin: 0;
-    padding: 0;
+    padding: 20px;
 }
 
 .container {
-    width: 80%;
-    margin: 50px auto;
-    text-align: center;
+    max-width: 1000px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-h1 {
-    color: #2c3e50;
+h1, h2, h3 {
+    text-align: center;
+    color: #333;
 }
 
 form {
-    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
 }
 
 select, button {
-    margin: 10px;
-    padding: 10px;
-    font-size: 1em;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 button {
-    background-color: #3498db;
+    background-color: #007bff;
     color: white;
     border: none;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: #0056b3;
 }
 
 .result {
-    background-color: #d5f5e3;
+    background-color: #e6f4ea;
     padding: 20px;
+    border-radius: 6px;
     margin-top: 20px;
-    border-radius: 8px;
 }
 
-.report-section {
+.tables {
     display: flex;
+    gap: 20px;
     justify-content: space-around;
     margin-top: 20px;
-    flex-wrap: wrap;
 }
 
-.report {
-    background-color: white;
-    padding: 15px;
+.bank-table {
     width: 45%;
-    margin: 10px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    overflow-x: auto;
 }
 
 table {
@@ -67,11 +69,13 @@ table {
 
 th, td {
     padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
+    border: 1px solid #ddd;
 }
 
-.scrollable {
-    max-height: 150px;
-    overflow-y: auto;
+.scroll-box {
+    max-height: 100px;
+    overflow-y: scroll;
+    background: #f9f9f9;
+    padding: 5px;
+    border: 1px solid #ccc;
 }
