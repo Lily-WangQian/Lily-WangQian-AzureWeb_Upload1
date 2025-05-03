@@ -8,7 +8,7 @@ app = Flask(__name__)
 sim_file = 'banks and banks detailed similarity score.csv'
 similarity_df = pd.read_csv(sim_file, index_col='Banks')
 
-# Drop any unnamed columns
+# Drop unnecessary columns if present
 if 'Unnamed: 0' in similarity_df.columns:
     similarity_df = similarity_df.drop(columns=['Unnamed: 0'])
 

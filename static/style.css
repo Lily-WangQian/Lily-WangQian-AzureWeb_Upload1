@@ -27,6 +27,15 @@ select, button {
     font-size: 16px;
     border-radius: 5px;
     border: 1px solid #ccc;
+    appearance: none;
+    background: #fff;
+}
+
+select {
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg width="16" height="16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M4 6l4 4 4-4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
 }
 
 button {
@@ -68,22 +77,32 @@ button:hover {
     margin: 10px;
     border-radius: 8px;
     box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    max-height: 400px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    word-wrap: break-word;
 }
 
 th, td {
     border: 1px solid #ddd;
     padding: 8px;
+    vertical-align: top;
 }
 
 th {
     background-color: #f9f9f9;
     font-weight: bold;
+}
+
+.wrap-cell {
+    max-width: 200px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .error-box {
