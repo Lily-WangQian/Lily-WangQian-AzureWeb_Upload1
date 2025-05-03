@@ -8,13 +8,12 @@ app = Flask(__name__)
 similarity_file = 'banks and banks detailed similarity score.csv'
 similarity_df = pd.read_csv(similarity_file, index_col='Banks')
 
-# Drop unnecessary columns
 if 'Unnamed: 0' in similarity_df.columns:
     similarity_df = similarity_df.drop(columns=['Unnamed: 0'])
 
 banks = similarity_df.columns.tolist()
 
-# Load ESG keywords data
+# Load ESG keyword data
 esg_file = 'banks keywords.csv'
 esg_df = pd.read_csv(esg_file)
 
@@ -35,14 +34,17 @@ def calculate_similarity():
     except KeyError:
         score = 'N/A'
 
-    # Get ESG details for both banks
-    esg_bank1 = esg_df[esg_df['Bank'].str.contains(bank1, case=False, na=False)]
-    esg_bank2 = esg_df[esg_df['Bank'].str.contains(bank2, case=False, na=False)]
+    # Get ESG details
+    esg_bank1 = esg_df[esg_df['Bank'].str.lower() == bank1.lower()]
+    esg_bank2 = esg_df[esg_df['Bank'].str.lower() == bank2.lower()]
 
     return render_template('index.html',
                            banks=banks,
                            similarity_result={'bank1': bank1, 'bank2': bank2, 'score': score},
-                           esg_data={'bank1': esg_bank1.to_dict(orient='records'), 'bank2': esg_bank2.to_dict(orient='records')},
+                           esg_data={
+                               'bank1': esg_bank1[['Report', 'Publication Date', 'TFIDF Key', 'Contextual Combined Keywords']].to_dict(orient='records'),
+                               'bank2': esg_bank2[['Report', 'Publication Date', 'TFIDF Key', 'Contextual Combined Keywords']].to_dict(orient='records')
+                           },
                            error=None)
 
 if __name__ == '__main__':
