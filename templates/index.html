@@ -6,84 +6,63 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Bank Similarity Comparator</h1>
-
-    <form action="/calculate" method="post">
-        <label for="bank1">Select First Bank:</label>
-        <select name="bank1" required>
-            <option value="">-- Select Bank --</option>
-            {% for bank in banks %}
-            <option value="{{ bank }}">{{ bank }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="bank2">Select Second Bank:</label>
-        <select name="bank2" required>
-            <option value="">-- Select Bank --</option>
-            {% for bank in banks %}
-            <option value="{{ bank }}">{{ bank }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Calculate Similarity</button>
-    </form>
-
-    {% if similarity_result %}
-    <div class="result-box">
-        <h2>Similarity Result</h2>
-        <p><strong>{{ similarity_result.bank1 }}</strong> and <strong>{{ similarity_result.bank2 }}</strong></p>
-        <p>Similarity Score: <span class="score">{{ similarity_result.score }}</span></p>
-    </div>
-    {% endif %}
-
-    {% if esg_data %}
-    <div class="comparison-tables">
-        <div class="table-section">
-            <h3>{{ similarity_result.bank1 }} ESG Reports</h3>
-            <table>
-                <tr>
-                    <th>Report</th>
-                    <th>Publication Date</th>
-                    <th>TFIDF Keywords</th>
-                    <th>Contextual Keywords</th>
-                </tr>
-                {% for row in esg_data.bank1 %}
-                <tr>
-                    <td>{{ row['Report'] }}</td>
-                    <td>{{ row['Publication Date'] }}</td>
-                    <td class="wrap-cell">{{ row['TFIDF Key'] }}</td>
-                    <td class="wrap-cell">{{ row['Contextual Combined Keywords'] }}</td>
-                </tr>
+    <div class="container">
+        <h1>Bank Similarity Comparator</h1>
+        <form method="post" action="/calculate">
+            <label for="bank1">Select First Bank:</label>
+            <select name="bank1" required>
+                <option value="">-- Select Bank --</option>
+                {% for bank in banks %}
+                    <option value="{{ bank }}">{{ bank }}</option>
                 {% endfor %}
-            </table>
-        </div>
+            </select>
 
-        <div class="table-section">
-            <h3>{{ similarity_result.bank2 }} ESG Reports</h3>
-            <table>
-                <tr>
-                    <th>Report</th>
-                    <th>Publication Date</th>
-                    <th>TFIDF Keywords</th>
-                    <th>Contextual Keywords</th>
-                </tr>
-                {% for row in esg_data.bank2 %}
-                <tr>
-                    <td>{{ row['Report'] }}</td>
-                    <td>{{ row['Publication Date'] }}</td>
-                    <td class="wrap-cell">{{ row['TFIDF Key'] }}</td>
-                    <td class="wrap-cell">{{ row['Contextual Combined Keywords'] }}</td>
-                </tr>
+            <label for="bank2">Select Second Bank:</label>
+            <select name="bank2" required>
+                <option value="">-- Select Bank --</option>
+                {% for bank in banks %}
+                    <option value="{{ bank }}">{{ bank }}</option>
                 {% endfor %}
-            </table>
-        </div>
-    </div>
-    {% endif %}
+            </select>
 
-    {% if error %}
-    <div class="error-box">
-        <p>{{ error }}</p>
+            <button type="submit">Calculate Similarity</button>
+        </form>
+
+        {% if result %}
+        <div class="result">
+            <h2>Similarity Result</h2>
+            <p><strong>{{ result.bank1 }}</strong> and <strong>{{ result.bank2 }}</strong></p>
+            <p>Similarity Score: <strong>{{ result.score }}</strong></p>
+
+            <div class="report-section">
+                <div class="report">
+                    <h3>{{ result.bank1 }} ESG Report</h3>
+                    <table>
+                        <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                        <tr>
+                            <td>{{ result.bank1_info.report }}</td>
+                            <td>{{ result.bank1_info.date }}</td>
+                            <td class="scrollable">{{ result.bank1_info.tfidf }}</td>
+                            <td class="scrollable">{{ result.bank1_info.contextual }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="report">
+                    <h3>{{ result.bank2 }} ESG Report</h3>
+                    <table>
+                        <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                        <tr>
+                            <td>{{ result.bank2_info.report }}</td>
+                            <td>{{ result.bank2_info.date }}</td>
+                            <td class="scrollable">{{ result.bank2_info.tfidf }}</td>
+                            <td class="scrollable">{{ result.bank2_info.contextual }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </body>
 </html>

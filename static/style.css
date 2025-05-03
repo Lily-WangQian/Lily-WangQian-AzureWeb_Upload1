@@ -1,46 +1,34 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
-    padding: 20px;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
 }
 
-h1, h2, h3 {
+.container {
+    width: 80%;
+    margin: 50px auto;
     text-align: center;
+}
+
+h1 {
     color: #2c3e50;
 }
 
 form {
-    max-width: 600px;
-    margin: 20px auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    text-align: center;
+    margin: 20px 0;
 }
 
 select, button {
-    width: 80%;
+    margin: 10px;
     padding: 10px;
-    margin: 10px 0;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    appearance: none;
-    background: #fff;
-}
-
-select {
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg width="16" height="16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M4 6l4 4 4-4z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px;
+    font-size: 1em;
 }
 
 button {
     background-color: #3498db;
-    color: #fff;
+    color: white;
+    border: none;
     cursor: pointer;
 }
 
@@ -48,70 +36,42 @@ button:hover {
     background-color: #2980b9;
 }
 
-.result-box {
-    max-width: 600px;
-    margin: 20px auto;
-    background: #dff0d8;
-    padding: 15px;
-    border: 1px solid #d6e9c6;
+.result {
+    background-color: #d5f5e3;
+    padding: 20px;
+    margin-top: 20px;
     border-radius: 8px;
-    text-align: center;
 }
 
-.score {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.comparison-tables {
+.report-section {
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-around;
-    margin-top: 30px;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
 
-.table-section {
-    width: 45%;
-    background: #fff;
+.report {
+    background-color: white;
     padding: 15px;
+    width: 45%;
     margin: 10px;
     border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    overflow-y: auto;
-    max-height: 400px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
-    word-wrap: break-word;
 }
 
 th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    vertical-align: top;
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
 }
 
-th {
-    background-color: #f9f9f9;
-    font-weight: bold;
-}
-
-.wrap-cell {
-    max-width: 200px;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.error-box {
-    max-width: 600px;
-    margin: 20px auto;
-    background: #f2dede;
-    padding: 15px;
-    border: 1px solid #ebccd1;
-    border-radius: 8px;
-    text-align: center;
-    color: #a94442;
+.scrollable {
+    max-height: 150px;
+    overflow-y: auto;
 }

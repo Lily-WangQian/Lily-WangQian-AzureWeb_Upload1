@@ -1,51 +1,55 @@
-import os
-import pandas as pd
 from flask import Flask, render_template, request
+import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity matrix
-similarity_file = 'banks and banks detailed similarity score.csv'
-similarity_df = pd.read_csv(similarity_file, index_col='Banks')
+# Load similarity and keyword data
+similarity_df = pd.read_csv('banks and banks detailed similarity score.csv', index_col=0)
+keywords_df = pd.read_csv('banks keywords.csv')
 
-if 'Unnamed: 0' in similarity_df.columns:
-    similarity_df = similarity_df.drop(columns=['Unnamed: 0'])
-
-banks = similarity_df.columns.tolist()
-
-# Load ESG keyword data
-esg_file = 'banks keywords.csv'
-esg_df = pd.read_csv(esg_file)
+# Clean bank names
+bank_names = [name.strip() for name in similarity_df.columns]
 
 @app.route('/')
 def index():
-    return render_template('index.html', banks=banks, similarity_result=None, esg_data=None, error=None)
+    return render_template('index.html', banks=bank_names, result=None)
 
 @app.route('/calculate', methods=['POST'])
-def calculate_similarity():
-    bank1 = request.form.get('bank1')
-    bank2 = request.form.get('bank2')
+def calculate():
+    bank1 = request.form['bank1']
+    bank2 = request.form['bank2']
 
-    if not bank1 or not bank2:
-        return render_template('index.html', banks=banks, similarity_result=None, esg_data=None, error="Please select two banks.")
-
+    # Get similarity score
     try:
         score = similarity_df.loc[bank1, bank2]
     except KeyError:
         score = 'N/A'
 
-    # Get ESG details
-    esg_bank1 = esg_df[esg_df['Bank'].str.lower() == bank1.lower()]
-    esg_bank2 = esg_df[esg_df['Bank'].str.lower() == bank2.lower()]
+    # Get keywords for both banks
+    bank1_data = keywords_df[keywords_df['Bank'].str.strip() == bank1].iloc[0]
+    bank2_data = keywords_df[keywords_df['Bank'].str.strip() == bank2].iloc[0]
 
-    return render_template('index.html',
-                           banks=banks,
-                           similarity_result={'bank1': bank1, 'bank2': bank2, 'score': score},
-                           esg_data={
-                               'bank1': esg_bank1[['Report', 'Publication Date', 'TFIDF Key', 'Contextual Combined Keywords']].to_dict(orient='records'),
-                               'bank2': esg_bank2[['Report', 'Publication Date', 'TFIDF Key', 'Contextual Combined Keywords']].to_dict(orient='records')
-                           },
-                           error=None)
+    bank1_info = {
+        'report': bank1_data['Report'],
+        'date': bank1_data['Publication Date'],
+        'tfidf': bank1_data['TFIDF Keywords'],
+        'contextual': bank1_data['Contextual Keywords']
+    }
+
+    bank2_info = {
+        'report': bank2_data['Report'],
+        'date': bank2_data['Publication Date'],
+        'tfidf': bank2_data['TFIDF Keywords'],
+        'contextual': bank2_data['Contextual Keywords']
+    }
+
+    return render_template('index.html', banks=bank_names, result={
+        'bank1': bank1,
+        'bank2': bank2,
+        'score': score,
+        'bank1_info': bank1_info,
+        'bank2_info': bank2_info
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
