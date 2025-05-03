@@ -2,114 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Similarity Calculator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script>
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-        }
-
-        function addMoreFiles() {
-            const container = document.getElementById('file-container');
-            const inputCount = container.querySelectorAll('input[type="file"]').length;
-            if (inputCount >= 10) {
-                alert("Maximum 10 files allowed.");
-                return;
-            }
-
-            const wrapper = document.createElement('div');
-            wrapper.style.marginBottom = '10px';
-
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.name = 'files';
-            input.required = true;
-
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.textContent = 'Remove File';
-            removeButton.style.marginLeft = '10px';
-            removeButton.onclick = function () {
-                container.removeChild(wrapper);
-            };
-
-            wrapper.appendChild(input);
-            wrapper.appendChild(removeButton);
-
-            container.appendChild(wrapper);
-        }
-    </script>
+    <title>Bank Similarity Calculator</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Document Similarity Calculator_1</h1>
+    <h1>Bank Similarity Calculator</h1>
 
-        <!-- Upload Form -->
-        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-            <div id="file-container">
-                <label>Upload PDF Files (2 to 10 files):</label><br><br>
-
-                <!-- Start with two upload inputs -->
-                <div style="margin-bottom: 10px;">
-                    <input type="file" name="files" required>
-                    <button type="button" onclick="this.parentNode.remove()">Remove File</button>
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <input type="file" name="files" required>
-                    <button type="button" onclick="this.parentNode.remove()">Remove File</button>
-                </div>
-            </div>
-
-            <button type="button" onclick="addMoreFiles()">Add More Documents</button><br><br>
-            <button type="submit" style="background-color:blue; color:white;">Upload Files</button>
-        </form>
-
-        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
-            <p>Processing... Please wait.</p>
-        </div>
-
-        <br><hr><br>
-
-        <!-- After Upload -->
-        {% if uploaded_filenames %}
-        <h2>Uploaded Files in Azure:</h2>
-        <form action="/calculate" method="post" onsubmit="showLoading()">
-            {% for file in uploaded_filenames %}
-            <input type="checkbox" name="uploaded_files" value="{{ file }}" checked> {{ file }}<br>
+    <form action="/calculate" method="post">
+        <label>Select First Bank:</label>
+        <select name="bank1" required>
+            {% for bank in banks %}
+            <option value="{{ bank }}">{{ bank }}</option>
             {% endfor %}
-            <br>
-            <button type="submit" style="background-color:green; color:white;">Calculate Similarity</button>
-        </form>
-        {% endif %}
+        </select>
 
-        {% if error %}
-        <div style="color: red; text-align: center; margin-top: 20px;">
-            <p>{{ error }}</p>
-        </div>
-        {% endif %}
+        <label>Select Second Bank:</label>
+        <select name="bank2" required>
+            {% for bank in banks %}
+            <option value="{{ bank }}">{{ bank }}</option>
+            {% endfor %}
+        </select>
 
-        {% if keyword_results %}
-        <hr>
-        <h2>TF-IDF Keywords Extracted</h2>
-        <table border="1" style="width: 100%; text-align: left;">
-            <thead>
-                <tr>
-                    <th>File Name</th>
-                    <th>TF-IDF Keywords</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result in keyword_results %}
-                <tr>
-                    <td>{{ result.filename }}</td>
-                    <td>{{ result.tfidf_keywords|join(', ') }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
-    </div>
+        <button type="submit">Calculate Similarity</button>
+    </form>
+
+    {% if similarity_result %}
+    <h2>Similarity Result</h2>
+    <p>{{ similarity_result.bank1 }} and {{ similarity_result.bank2 }} → Score: {{ similarity_result.score }}</p>
+    {% endif %}
+
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
 </body>
 </html>

@@ -1,4 +1,2 @@
 Flask
-azure-storage-blob
-pdfplumber
-scikit-learn
+pandas
