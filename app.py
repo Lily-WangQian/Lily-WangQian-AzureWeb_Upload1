@@ -3,14 +3,15 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity scores
-similarity_df = pd.read_csv('banks and banks detailed similarity score.csv', index_col=0)
+# Load similarity scores (set 'Banks' column as index)
+similarity_df = pd.read_csv('banks and banks detailed similarity score.csv')
+similarity_df.set_index('Banks', inplace=True)
 
 # Load keyword details
 keywords_df = pd.read_csv('banks keywords.csv')
 
-# Get clean list of bank names
-bank_names = [name.strip() for name in similarity_df.columns]
+# Get clean list of bank names (from similarity_df index)
+bank_names = list(similarity_df.index)
 
 @app.route('/')
 def index():
@@ -21,9 +22,10 @@ def calculate():
     bank1 = request.form['bank1']
     bank2 = request.form['bank2']
 
-    # Try to get similarity score
+    # Get similarity score safely
     try:
         score = similarity_df.loc[bank1, bank2]
+        score = round(score, 3)  # round to 3 decimals
     except KeyError:
         score = 'N/A'
 
