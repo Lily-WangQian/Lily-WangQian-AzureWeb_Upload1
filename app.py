@@ -3,11 +3,13 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity and keyword data
+# Load similarity scores
 similarity_df = pd.read_csv('banks and banks detailed similarity score.csv', index_col=0)
+
+# Load keyword details
 keywords_df = pd.read_csv('banks keywords.csv')
 
-# Clean bank names
+# Get clean list of bank names
 bank_names = [name.strip() for name in similarity_df.columns]
 
 @app.route('/')
@@ -19,29 +21,35 @@ def calculate():
     bank1 = request.form['bank1']
     bank2 = request.form['bank2']
 
-    # Get similarity score
+    # Try to get similarity score
     try:
         score = similarity_df.loc[bank1, bank2]
     except KeyError:
         score = 'N/A'
 
-    # Get keywords for both banks
-    bank1_data = keywords_df[keywords_df['Bank'].str.strip() == bank1].iloc[0]
-    bank2_data = keywords_df[keywords_df['Bank'].str.strip() == bank2].iloc[0]
+    # Get bank 1 details
+    bank1_data = keywords_df[keywords_df['Bank'].str.strip() == bank1]
+    if not bank1_data.empty:
+        bank1_info = {
+            'report': bank1_data.iloc[0]['Report'],
+            'date': bank1_data.iloc[0]['Publication Date'],
+            'tfidf': bank1_data.iloc[0]['TFIDF Keywords'],
+            'contextual': bank1_data.iloc[0]['Contextual Keywords']
+        }
+    else:
+        bank1_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
 
-    bank1_info = {
-        'report': bank1_data['Report'],
-        'date': bank1_data['Publication Date'],
-        'tfidf': bank1_data['TFIDF Keywords'],
-        'contextual': bank1_data['Contextual Keywords']
-    }
-
-    bank2_info = {
-        'report': bank2_data['Report'],
-        'date': bank2_data['Publication Date'],
-        'tfidf': bank2_data['TFIDF Keywords'],
-        'contextual': bank2_data['Contextual Keywords']
-    }
+    # Get bank 2 details
+    bank2_data = keywords_df[keywords_df['Bank'].str.strip() == bank2]
+    if not bank2_data.empty:
+        bank2_info = {
+            'report': bank2_data.iloc[0]['Report'],
+            'date': bank2_data.iloc[0]['Publication Date'],
+            'tfidf': bank2_data.iloc[0]['TFIDF Keywords'],
+            'contextual': bank2_data.iloc[0]['Contextual Keywords']
+        }
+    else:
+        bank2_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
 
     return render_template('index.html', banks=bank_names, result={
         'bank1': bank1,
