@@ -4,15 +4,12 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Load similarity matrix CSV on startup
+# Load CSV: use 'Banks' column as row index
 CSV_FILE = 'banks and banks detailed similarity score.csv'
-similarity_df = pd.read_csv(CSV_FILE, index_col=0)
+similarity_df = pd.read_csv(CSV_FILE, index_col='Banks')
 
-# Ensure index and columns are string (avoid integer key errors)
-similarity_df.index = similarity_df.index.astype(str)
-similarity_df.columns = similarity_df.columns.astype(str)
-
-banks = similarity_df.index.tolist()
+# Get bank names from both index and columns
+banks = similarity_df.columns.tolist()
 
 @app.route('/')
 def index():
