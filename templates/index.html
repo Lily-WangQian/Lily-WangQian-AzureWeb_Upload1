@@ -41,7 +41,12 @@
         <div class="table-section">
             <h3>{{ similarity_result.bank1 }} ESG Report</h3>
             <table>
-                <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                <tr>
+                    <th>Report</th>
+                    <th>Publication Date</th>
+                    <th>TFIDF Keywords</th>
+                    <th>Contextual Keywords</th>
+                </tr>
                 {% for row in esg_data.bank1 %}
                 <tr>
                     <td>{{ row['Report'] }}</td>
@@ -56,7 +61,12 @@
         <div class="table-section">
             <h3>{{ similarity_result.bank2 }} ESG Report</h3>
             <table>
-                <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                <tr>
+                    <th>Report</th>
+                    <th>Publication Date</th>
+                    <th>TFIDF Keywords</th>
+                    <th>Contextual Keywords</th>
+                </tr>
                 {% for row in esg_data.bank2 %}
                 <tr>
                     <td>{{ row['Report'] }}</td>

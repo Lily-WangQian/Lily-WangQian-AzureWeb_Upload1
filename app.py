@@ -5,16 +5,16 @@ from flask import Flask, render_template, request
 app = Flask(__name__)
 
 # Load similarity matrix
-sim_file = 'banks and banks detailed similarity score.csv'
-similarity_df = pd.read_csv(sim_file, index_col='Banks')
+similarity_file = 'banks and banks detailed similarity score.csv'
+similarity_df = pd.read_csv(similarity_file, index_col='Banks')
 
-# Drop unnecessary columns if present
+# Drop unnecessary columns
 if 'Unnamed: 0' in similarity_df.columns:
     similarity_df = similarity_df.drop(columns=['Unnamed: 0'])
 
 banks = similarity_df.columns.tolist()
 
-# Load ESG keyword data
+# Load ESG keywords data
 esg_file = 'banks keywords.csv'
 esg_df = pd.read_csv(esg_file)
 
