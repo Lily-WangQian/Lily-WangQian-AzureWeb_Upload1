@@ -10,8 +10,8 @@ bank_similarity_df.set_index('Standard', inplace=True)
 bank_keywords_df = pd.read_csv('banks keywords.csv')
 standard_keywords_df = pd.read_csv('standards keywords.csv')
 
-# Extract names
-bank_names = list(bank_similarity_df.columns)
+# Extract clean names (remove unwanted header like 'Unnamed: 0')
+bank_names = [col for col in bank_similarity_df.columns if not col.strip().lower().startswith('unnamed')]
 standard_names = list(bank_similarity_df.index)
 
 @app.route('/')
