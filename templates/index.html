@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bank and Standard Similarity Comparator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Bank and Standard Similarity</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: auto; }
+        label, select, button { display: block; margin-top: 15px; width: 100%; }
+        .result { margin-top: 30px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -13,7 +18,7 @@
         <select name="bank" required>
             <option value="">-- Select Bank --</option>
             {% for bank in banks %}
-                <option value="{{ bank }}">{{ bank }}</option>
+                <option value="{{ bank }}" {% if bank == request.form.bank %}selected{% endif %}>{{ bank }}</option>
             {% endfor %}
         </select>
 
@@ -21,42 +26,18 @@
         <select name="standard" required>
             <option value="">-- Select Standard --</option>
             {% for std in standards %}
-                <option value="{{ std }}">{{ std }}</option>
+                <option value="{{ std }}" {% if std == request.form.standard %}selected{% endif %}>{{ std }}</option>
             {% endfor %}
         </select>
 
         <button type="submit">Calculate Similarity</button>
     </form>
 
-    {% if result %}
+    {% if score is not none %}
     <div class="result">
-        <h2>Similarity Result</h2>
-        <p><strong>{{ result.bank }}</strong> and <strong>{{ result.standard }}</strong></p>
-        <p>Similarity Score: <strong>{{ result.score }}</strong></p>
-
-        <div class="report-section">
-            <div class="report">
-                <h3>{{ result.bank }} ESG Report</h3>
-                <table>
-                    <tr><th>Report</th><th>Publication Date</th></tr>
-                    <tr>
-                        <td>{{ result.bank_info.report }}</td>
-                        <td>{{ result.bank_info.date }}</td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="report">
-                <h3>{{ result.standard }} Standard</h3>
-                <table>
-                    <tr><th>Standard</th><th>Publication Date</th></tr>
-                    <tr>
-                        <td>{{ result.standard_info.report }}</td>
-                        <td>{{ result.standard_info.date }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
+        <h2>Result</h2>
+        <p><strong>{{ bank }}</strong> compared to <strong>{{ standard }}</strong></p>
+        <p>Similarity Score: <strong>{{ score }}</strong></p>
     </div>
     {% endif %}
 </div>
