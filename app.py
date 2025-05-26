@@ -13,13 +13,14 @@ similarity_df.set_index('Standard', inplace=True)
 bank_keywords_df = pd.read_csv('banks keywords.csv')
 standard_keywords_df = pd.read_csv('standards keywords.csv')
 
-# Standardize column names
+# Clean columns
 bank_keywords_df.columns = bank_keywords_df.columns.str.strip()
 standard_keywords_df.columns = standard_keywords_df.columns.str.strip()
+standard_keywords_df.rename(columns={'Standards': 'Standard'}, inplace=True)
 
-# Extract valid bank and standard names
-bank_names = [col for col in similarity_df.columns]
-standard_names = list(similarity_df.index)
+# Extract names
+bank_names = similarity_df.columns.tolist()
+standard_names = similarity_df.index.tolist()
 
 @app.route('/')
 def index():
@@ -30,7 +31,7 @@ def calculate():
     bank = request.form['bank']
     standard = request.form['standard']
 
-    # Try similarity score lookup
+    # Get similarity score
     try:
         score = round(float(similarity_df.loc[standard, bank]), 3)
     except Exception as e:
