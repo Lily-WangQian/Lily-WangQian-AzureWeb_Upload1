@@ -3,21 +3,22 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity scores
+# Load and clean similarity scores
 similarity_df = pd.read_csv('standards and banks detailed similarity score.csv')
-
-# Drop unnamed columns
 similarity_df = similarity_df.loc[:, ~similarity_df.columns.str.contains('^Unnamed')]
-
-# Set index for standards
+similarity_df.columns = similarity_df.columns.str.strip()
 similarity_df.set_index('Standard', inplace=True)
 
-# Load keyword details
+# Load and clean keyword files
 bank_keywords_df = pd.read_csv('banks keywords.csv')
 standard_keywords_df = pd.read_csv('standards keywords.csv')
 
-# Clean bank names
-bank_names = [col for col in similarity_df.columns if col.lower() != 'unnamed: 0']
+# Clean headers
+bank_keywords_df.columns = bank_keywords_df.columns.str.strip()
+standard_keywords_df.columns = standard_keywords_df.columns.str.strip()
+
+# Clean names
+bank_names = [col.strip() for col in similarity_df.columns]
 standard_names = list(similarity_df.index)
 
 @app.route('/')
@@ -32,26 +33,34 @@ def calculate():
     try:
         score = round(float(similarity_df.loc[standard, bank]), 3)
     except Exception as e:
-        print(f"Error calculating similarity: {e}")
+        print(f"Similarity error: {e}")
         score = 'N/A'
 
-    # Extract bank info safely
+    # Get bank info
     bank_row = bank_keywords_df[bank_keywords_df['Bank'].str.strip() == bank]
-    bank_info = {
-        'report': bank_row.iloc[0]['Report'] if not bank_row.empty else 'N/A',
-        'date': bank_row.iloc[0]['Publication Date'] if not bank_row.empty else 'N/A',
-        'tfidf': bank_row.iloc[0].get('TFIDF Keywords', 'N/A') if not bank_row.empty else 'N/A',
-        'contextual': bank_row.iloc[0].get('Contextual Keywords', 'N/A') if not bank_row.empty else 'N/A',
-    }
+    if not bank_row.empty:
+        row = bank_row.iloc[0]
+        bank_info = {
+            'report': row.get('Report', 'N/A'),
+            'date': row.get('Publication Date', 'N/A'),
+            'tfidf': row.get('TFIDF Keywords', 'N/A'),
+            'contextual': row.get('Contextual Keywords', 'N/A'),
+        }
+    else:
+        bank_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
 
-    # Extract standard info safely
+    # Get standard info
     std_row = standard_keywords_df[standard_keywords_df['Standard'].str.strip() == standard]
-    standard_info = {
-        'report': std_row.iloc[0]['Standard'] if not std_row.empty else 'N/A',
-        'date': std_row.iloc[0]['Publication Date'] if not std_row.empty else 'N/A',
-        'tfidf': std_row.iloc[0].get('TFIDF Keywords', 'N/A') if not std_row.empty else 'N/A',
-        'contextual': std_row.iloc[0].get('Contextual Keywords', 'N/A') if not std_row.empty else 'N/A',
-    }
+    if not std_row.empty:
+        row = std_row.iloc[0]
+        standard_info = {
+            'report': row.get('Standard', 'N/A'),
+            'date': row.get('Publication Date', 'N/A'),
+            'tfidf': row.get('TFIDF Keywords', 'N/A'),
+            'contextual': row.get('Contextual Keywords', 'N/A'),
+        }
+    else:
+        standard_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
 
     return render_template('index.html', banks=bank_names, standards=standard_names, result={
         'bank': bank,
