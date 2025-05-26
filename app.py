@@ -3,63 +3,61 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity scores (set 'Banks' column as index)
-similarity_df = pd.read_csv('banks and banks detailed similarity score.csv')
-similarity_df.set_index('Banks', inplace=True)
+# Load similarity matrix (bank vs standards)
+similarity_df = pd.read_csv('standards and banks detailed similarity score.csv', index_col=0)
 
-# Load keyword details
-keywords_df = pd.read_csv('banks keywords.csv')
+# Load ESG details
+banks_df = pd.read_csv('banks keywords.csv')
+standards_df = pd.read_csv('standards keywords.csv')
 
-# Get clean list of bank names (from similarity_df index)
-bank_names = list(similarity_df.index)
+# Clean bank/standard names from CSV
+banks = list(similarity_df.columns)
+standards = list(similarity_df.index)
 
 @app.route('/')
 def index():
-    return render_template('index.html', banks=bank_names, result=None)
+    return render_template('index.html', banks=banks, standards=standards, result=None)
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    bank1 = request.form['bank1']
-    bank2 = request.form['bank2']
+    selected_bank = request.form['bank']
+    selected_standard = request.form['standard']
 
-    # Get similarity score safely
+    # Try to retrieve similarity score
     try:
-        score = similarity_df.loc[bank1, bank2]
-        score = round(score, 3)  # round to 3 decimals
+        score = similarity_df.loc[selected_standard, selected_bank]
+        score = round(score, 3)
     except KeyError:
         score = 'N/A'
 
-    # Get bank 1 details
-    bank1_data = keywords_df[keywords_df['Bank'].str.strip() == bank1]
-    if not bank1_data.empty:
-        bank1_info = {
-            'report': bank1_data.iloc[0]['Report'],
-            'date': bank1_data.iloc[0]['Publication Date'],
-            'tfidf': bank1_data.iloc[0]['TFIDF Keywords'],
-            'contextual': bank1_data.iloc[0]['Contextual Keywords']
-        }
-    else:
-        bank1_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
+    # Get bank ESG info
+    bank_data = banks_df[banks_df['Bank'].str.strip() == selected_bank].iloc[0]
+    bank_info = {
+        'report': bank_data['Report'],
+        'date': bank_data['Publication Date'],
+        'tfidf': bank_data['TFIDF Keywords'],
+        'contextual': bank_data['Contextual Keywords']
+    }
 
-    # Get bank 2 details
-    bank2_data = keywords_df[keywords_df['Bank'].str.strip() == bank2]
-    if not bank2_data.empty:
-        bank2_info = {
-            'report': bank2_data.iloc[0]['Report'],
-            'date': bank2_data.iloc[0]['Publication Date'],
-            'tfidf': bank2_data.iloc[0]['TFIDF Keywords'],
-            'contextual': bank2_data.iloc[0]['Contextual Keywords']
-        }
-    else:
-        bank2_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
+    # Get standard ESG info
+    std_data = standards_df[standards_df['Standard'].str.strip() == selected_standard].iloc[0]
+    standard_info = {
+        'report': std_data['Report'],
+        'date': std_data['Publication Date'],
+        'tfidf': std_data['TFIDF Keywords'],
+        'contextual': std_data['Contextual Keywords']
+    }
 
-    return render_template('index.html', banks=bank_names, result={
-        'bank1': bank1,
-        'bank2': bank2,
-        'score': score,
-        'bank1_info': bank1_info,
-        'bank2_info': bank2_info
-    })
+    return render_template('index.html',
+                           banks=banks,
+                           standards=standards,
+                           result={
+                               'bank': selected_bank,
+                               'standard': selected_standard,
+                               'score': score,
+                               'bank_info': bank_info,
+                               'standard_info': standard_info
+                           })
 
 if __name__ == '__main__':
     app.run(debug=True)
