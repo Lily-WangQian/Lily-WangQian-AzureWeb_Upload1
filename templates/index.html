@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bank and Standard Similarity</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .container { max-width: 600px; margin: auto; }
-        label, select, button { display: block; margin-top: 15px; width: 100%; }
-        .result { margin-top: 30px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="container">
@@ -35,7 +30,7 @@
 
     {% if score is not none %}
     <div class="result">
-        <h2>Result</h2>
+        <h2>Similarity Result</h2>
         <p><strong>{{ bank }}</strong> compared to <strong>{{ standard }}</strong></p>
         <p>Similarity Score: <strong>{{ score }}</strong></p>
     </div>
