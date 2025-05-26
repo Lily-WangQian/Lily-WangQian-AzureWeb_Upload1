@@ -3,23 +3,23 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity score CSV
+# Load and clean similarity score CSV
 similarity_df = pd.read_csv('standards and banks detailed similarity score.csv')
 similarity_df = similarity_df.loc[:, ~similarity_df.columns.str.contains('^Unnamed', case=False)]
 similarity_df.columns = similarity_df.columns.str.strip()
 similarity_df.set_index('Standard', inplace=True)
 
-# Load bank and standard keyword CSVs
+# Load ESG keyword data
 bank_keywords_df = pd.read_csv('banks keywords.csv')
 standard_keywords_df = pd.read_csv('standards keywords.csv')
 
-# Clean headers
+# Clean column names
 bank_keywords_df.columns = bank_keywords_df.columns.str.strip()
 standard_keywords_df.columns = standard_keywords_df.columns.str.strip()
 
-# Clean names
+# Get valid names
 bank_names = similarity_df.columns.tolist()
-standard_names = list(similarity_df.index)
+standard_names = similarity_df.index.tolist()
 
 @app.route('/')
 def index():
@@ -37,22 +37,27 @@ def calculate():
     bank = request.form['bank']
     standard = request.form['standard']
 
-    # Get similarity score
     try:
         score = round(float(similarity_df.loc[standard, bank]), 3)
     except Exception as e:
         print(f"Error calculating similarity: {e}")
         score = 'N/A'
 
-    # Get bank data
-    bank_data = bank_keywords_df[bank_keywords_df['Bank'].str.strip().str.lower() == bank.lower()]
-    bank_table = bank_data[['Report', 'Publication Date', 'TFIDF Keywords', 'Contextual Keywords']].to_html(
-        classes='table table-bordered', index=False)
+    # Prepare bank ESG report
+    bank_data = bank_keywords_df[bank_keywords_df['Bank'].str.lower().str.strip() == bank.lower()]
+    if not bank_data.empty:
+        bank_data = bank_data[['Report', 'Publication Date', 'TFIDF Keywords', 'Contextual Keywords']]
+        bank_table = bank_data.to_html(classes='table table-bordered', index=False)
+    else:
+        bank_table = "<p>No data found for selected bank.</p>"
 
-    # Get standard data
-    standard_data = standard_keywords_df[standard_keywords_df['Standard'].str.strip().str.lower() == standard.lower()]
-    standard_table = standard_data[['Report', 'Publication Date', 'TFIDF Keywords', 'Contextual Keywords']].to_html(
-        classes='table table-bordered', index=False)
+    # Prepare standard ESG report
+    standard_data = standard_keywords_df[standard_keywords_df['Standard'].str.lower().str.strip() == standard.lower()]
+    if not standard_data.empty:
+        standard_data = standard_data[['Report', 'Publication Date', 'TFIDF Keywords', 'Contextual Keywords']]
+        standard_table = standard_data.to_html(classes='table table-bordered', index=False)
+    else:
+        standard_table = "<p>No data found for selected standard.</p>"
 
     return render_template('index.html',
                            banks=bank_names,
