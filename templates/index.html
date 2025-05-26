@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bank-Standard Similarity Comparator</title>
+    <title>Bank and Standard Comparator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -30,9 +30,9 @@
 
         {% if result %}
         <div class="result">
-            <h2>Similarity Score</h2>
-            <p><strong>{{ result.bank }}</strong> vs. <strong>{{ result.standard }}</strong></p>
-            <p>Score: <strong>{{ result.score }}</strong></p>
+            <h2>Similarity Result</h2>
+            <p><strong>{{ result.bank }}</strong> and <strong>{{ result.standard }}</strong></p>
+            <p>Similarity Score: <strong>{{ result.score }}</strong></p>
 
             <div class="report-section">
                 <div class="report">
@@ -51,7 +51,7 @@
                 <div class="report">
                     <h3>{{ result.standard }} Standard</h3>
                     <table>
-                        <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                        <tr><th>Standard</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
                         <tr>
                             <td>{{ result.standard_info.report }}</td>
                             <td>{{ result.standard_info.date }}</td>
