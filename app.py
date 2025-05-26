@@ -3,16 +3,23 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load CSVs
-bank_similarity_df = pd.read_csv('standards and banks detailed similarity score.csv')
-bank_similarity_df.set_index('Standard', inplace=True)
+# Load similarity scores
+similarity_df = pd.read_csv('standards and banks detailed similarity score.csv')
 
+# Remove the 'Unnamed: 0' column if present
+if 'Unnamed: 0' in similarity_df.columns:
+    similarity_df.drop(columns=['Unnamed: 0'], inplace=True)
+
+# Set standard column as index
+similarity_df.set_index('Standard', inplace=True)
+
+# Load keywords data
 bank_keywords_df = pd.read_csv('banks keywords.csv')
 standard_keywords_df = pd.read_csv('standards keywords.csv')
 
-# Extract clean names (remove unwanted header like 'Unnamed: 0')
-bank_names = [col for col in bank_similarity_df.columns if not col.strip().lower().startswith('unnamed')]
-standard_names = list(bank_similarity_df.index)
+# Get clean list of bank names (excluding anything like 'Unnamed: 0')
+bank_names = [col for col in similarity_df.columns if not col.lower().startswith('unnamed')]
+standard_names = list(similarity_df.index)
 
 @app.route('/')
 def index():
@@ -24,11 +31,10 @@ def calculate():
     standard = request.form['standard']
 
     try:
-        score = round(bank_similarity_df.loc[standard, bank], 3)
+        score = round(similarity_df.loc[standard, bank], 3)
     except KeyError:
         score = 'N/A'
 
-    # Extract bank info
     bank_data = bank_keywords_df[bank_keywords_df['Bank'].str.strip() == bank]
     bank_info = {
         'report': bank_data.iloc[0]['Report'] if not bank_data.empty else 'N/A',
@@ -37,7 +43,6 @@ def calculate():
         'contextual': bank_data.iloc[0]['Contextual Keywords'] if not bank_data.empty else 'N/A',
     }
 
-    # Extract standard info
     standard_data = standard_keywords_df[standard_keywords_df['Standard'].str.strip() == standard]
     standard_info = {
         'report': standard_data.iloc[0]['Standard'] if not standard_data.empty else 'N/A',
