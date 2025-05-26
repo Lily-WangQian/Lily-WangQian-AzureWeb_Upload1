@@ -3,62 +3,64 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load similarity scores (set 'Banks' column as index)
-similarity_df = pd.read_csv('banks and banks detailed similarity score.csv')
-similarity_df.set_index('Banks', inplace=True)
+# Load similarity scores between standards and banks
+similarity_df = pd.read_csv('standards and banks detailed similarity score.csv')
+similarity_df.set_index('Standards', inplace=True)
 
 # Load keyword details
-keywords_df = pd.read_csv('banks keywords.csv')
+banks_keywords_df = pd.read_csv('banks keywords.csv')
+standards_keywords_df = pd.read_csv('standards keywords.csv')
 
-# Get clean list of bank names (from similarity_df index)
-bank_names = list(similarity_df.index)
+# Extract unique names
+bank_names = sorted(banks_keywords_df['Bank'].unique())
+standard_names = sorted(similarity_df.index)
 
 @app.route('/')
 def index():
-    return render_template('index.html', banks=bank_names, result=None)
+    return render_template('index.html', banks=bank_names, standards=standard_names, result=None)
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    bank1 = request.form['bank1']
-    bank2 = request.form['bank2']
+    bank = request.form['bank']
+    standard = request.form['standard']
 
-    # Get similarity score safely
+    # Get similarity score
     try:
-        score = similarity_df.loc[bank1, bank2]
-        score = round(score, 3)  # round to 3 decimals
+        score = similarity_df.loc[standard, bank]
+        score = round(score, 3)
     except KeyError:
         score = 'N/A'
 
-    # Get bank 1 details
-    bank1_data = keywords_df[keywords_df['Bank'].str.strip() == bank1]
-    if not bank1_data.empty:
-        bank1_info = {
-            'report': bank1_data.iloc[0]['Report'],
-            'date': bank1_data.iloc[0]['Publication Date'],
-            'tfidf': bank1_data.iloc[0]['TFIDF Keywords'],
-            'contextual': bank1_data.iloc[0]['Contextual Keywords']
+    # Get bank info
+    bank_data = banks_keywords_df[banks_keywords_df['Bank'].str.strip() == bank]
+    if not bank_data.empty:
+        bank_info = {
+            'report': bank_data.iloc[0]['Report'],
+            'date': bank_data.iloc[0]['Publication Date'],
+            'tfidf': ', '.join(bank_data.iloc[0]['TFIDF Keywords'].split(', ')[:5]),
+            'contextual': ', '.join(bank_data.iloc[0]['Contextual Keywords'].split(', ')[:5])
         }
     else:
-        bank1_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
+        bank_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
 
-    # Get bank 2 details
-    bank2_data = keywords_df[keywords_df['Bank'].str.strip() == bank2]
-    if not bank2_data.empty:
-        bank2_info = {
-            'report': bank2_data.iloc[0]['Report'],
-            'date': bank2_data.iloc[0]['Publication Date'],
-            'tfidf': bank2_data.iloc[0]['TFIDF Keywords'],
-            'contextual': bank2_data.iloc[0]['Contextual Keywords']
+    # Get standard info
+    standard_data = standards_keywords_df[standards_keywords_df['Standard'].str.strip() == standard]
+    if not standard_data.empty:
+        standard_info = {
+            'report': standard_data.iloc[0]['Report'],
+            'date': standard_data.iloc[0]['Publication Date'],
+            'tfidf': ', '.join(standard_data.iloc[0]['TFIDF Keywords'].split(', ')[:5]),
+            'contextual': ', '.join(standard_data.iloc[0]['Contextual Keywords'].split(', ')[:5])
         }
     else:
-        bank2_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
+        standard_info = {'report': 'N/A', 'date': 'N/A', 'tfidf': 'N/A', 'contextual': 'N/A'}
 
-    return render_template('index.html', banks=bank_names, result={
-        'bank1': bank1,
-        'bank2': bank2,
+    return render_template('index.html', banks=bank_names, standards=standard_names, result={
+        'bank': bank,
+        'standard': standard,
         'score': score,
-        'bank1_info': bank1_info,
-        'bank2_info': bank2_info
+        'bank_info': bank_info,
+        'standard_info': standard_info
     })
 
 if __name__ == '__main__':

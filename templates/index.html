@@ -2,26 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bank Similarity Comparator</title>
+    <title>Bank vs Standard Similarity Comparator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .scrollable { max-height: 100px; overflow-y: auto; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+        .container { width: 90%; margin: auto; }
+        .report-section { display: flex; gap: 20px; margin-top: 20px; }
+        .report { flex: 1; }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bank Similarity Comparator</h1>
+        <h1>Bank vs Standard Similarity Comparator</h1>
         <form method="post" action="/calculate">
-            <label for="bank1">Select First Bank:</label>
-            <select name="bank1" required>
+            <label for="bank">Select Bank:</label>
+            <select name="bank" required>
                 <option value="">-- Select Bank --</option>
                 {% for bank in banks %}
                     <option value="{{ bank }}">{{ bank }}</option>
                 {% endfor %}
             </select>
 
-            <label for="bank2">Select Second Bank:</label>
-            <select name="bank2" required>
-                <option value="">-- Select Bank --</option>
-                {% for bank in banks %}
-                    <option value="{{ bank }}">{{ bank }}</option>
+            <label for="standard">Select Standard:</label>
+            <select name="standard" required>
+                <option value="">-- Select Standard --</option>
+                {% for standard in standards %}
+                    <option value="{{ standard }}">{{ standard }}</option>
                 {% endfor %}
             </select>
 
@@ -31,32 +38,32 @@
         {% if result %}
         <div class="result">
             <h2>Similarity Result</h2>
-            <p><strong>{{ result.bank1 }}</strong> and <strong>{{ result.bank2 }}</strong></p>
+            <p><strong>{{ result.bank }}</strong> vs <strong>{{ result.standard }}</strong></p>
             <p>Similarity Score: <strong>{{ result.score }}</strong></p>
 
             <div class="report-section">
                 <div class="report">
-                    <h3>{{ result.bank1 }} ESG Report</h3>
+                    <h3>{{ result.bank }} ESG Report</h3>
                     <table>
-                        <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                        <tr><th>Report</th><th>Publication Date</th><th>Top 5 TFIDF Keywords</th><th>Top 5 Contextual Keywords</th></tr>
                         <tr>
-                            <td>{{ result.bank1_info.report }}</td>
-                            <td>{{ result.bank1_info.date }}</td>
-                            <td class="scrollable">{{ result.bank1_info.tfidf }}</td>
-                            <td class="scrollable">{{ result.bank1_info.contextual }}</td>
+                            <td>{{ result.bank_info.report }}</td>
+                            <td>{{ result.bank_info.date }}</td>
+                            <td class="scrollable">{{ result.bank_info.tfidf }}</td>
+                            <td class="scrollable">{{ result.bank_info.contextual }}</td>
                         </tr>
                     </table>
                 </div>
 
                 <div class="report">
-                    <h3>{{ result.bank2 }} ESG Report</h3>
+                    <h3>{{ result.standard }} Standard</h3>
                     <table>
-                        <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                        <tr><th>Report</th><th>Publication Date</th><th>Top 5 TFIDF Keywords</th><th>Top 5 Contextual Keywords</th></tr>
                         <tr>
-                            <td>{{ result.bank2_info.report }}</td>
-                            <td>{{ result.bank2_info.date }}</td>
-                            <td class="scrollable">{{ result.bank2_info.tfidf }}</td>
-                            <td class="scrollable">{{ result.bank2_info.contextual }}</td>
+                            <td>{{ result.standard_info.report }}</td>
+                            <td>{{ result.standard_info.date }}</td>
+                            <td class="scrollable">{{ result.standard_info.tfidf }}</td>
+                            <td class="scrollable">{{ result.standard_info.contextual }}</td>
                         </tr>
                     </table>
                 </div>
