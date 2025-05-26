@@ -9,13 +9,25 @@ similarity_df = similarity_df.loc[:, ~similarity_df.columns.str.contains('^Unnam
 similarity_df.columns = similarity_df.columns.str.strip()
 similarity_df.set_index('Standard', inplace=True)
 
+# Load the standards keywords CSV
+keywords_df = pd.read_csv('standards keywords.csv')
+keywords_df.columns = keywords_df.columns.str.strip()
+
 # Extract bank and standard names
 bank_names = similarity_df.columns.tolist()
 standard_names = similarity_df.index.tolist()
 
 @app.route('/')
 def index():
-    return render_template('index.html', banks=bank_names, standards=standard_names, score=None)
+    return render_template(
+        'index.html',
+        banks=bank_names,
+        standards=standard_names,
+        score=None,
+        selected_bank=None,
+        selected_standard=None,
+        keywords_table=keywords_df.to_html(classes='table table-bordered', index=False)
+    )
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
@@ -28,7 +40,15 @@ def calculate():
         print(f"Error calculating similarity: {e}")
         score = 'N/A'
 
-    return render_template('index.html', banks=bank_names, standards=standard_names, score=score, bank=bank, standard=standard)
+    return render_template(
+        'index.html',
+        banks=bank_names,
+        standards=standard_names,
+        score=score,
+        selected_bank=bank,
+        selected_standard=standard,
+        keywords_table=keywords_df.to_html(classes='table table-bordered', index=False)
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
