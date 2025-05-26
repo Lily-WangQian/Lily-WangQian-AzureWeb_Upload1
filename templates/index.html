@@ -38,12 +38,10 @@
             <div class="report">
                 <h3>{{ result.bank }} ESG Report</h3>
                 <table>
-                    <tr><th>Report</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                    <tr><th>Report</th><th>Publication Date</th></tr>
                     <tr>
                         <td>{{ result.bank_info.report }}</td>
                         <td>{{ result.bank_info.date }}</td>
-                        <td class="scrollable">{{ result.bank_info.tfidf }}</td>
-                        <td class="scrollable">{{ result.bank_info.contextual }}</td>
                     </tr>
                 </table>
             </div>
@@ -51,12 +49,10 @@
             <div class="report">
                 <h3>{{ result.standard }} Standard</h3>
                 <table>
-                    <tr><th>Standard</th><th>Publication Date</th><th>TFIDF Keywords</th><th>Contextual Keywords</th></tr>
+                    <tr><th>Standard</th><th>Publication Date</th></tr>
                     <tr>
                         <td>{{ result.standard_info.report }}</td>
                         <td>{{ result.standard_info.date }}</td>
-                        <td class="scrollable">{{ result.standard_info.tfidf }}</td>
-                        <td class="scrollable">{{ result.standard_info.contextual }}</td>
                     </tr>
                 </table>
             </div>
