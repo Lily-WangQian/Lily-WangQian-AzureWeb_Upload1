@@ -1,2 +1,7 @@
-Flask
+flask
+pdfplumber
+scikit-learn
+sentence-transformers
+torch
+numpy
 pandas
