@@ -12,30 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      # Optional: sanity check that requirements resolve (not used for runtime)
-      - name: Install dependencies (check only)
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # Package the repo into a clean archive for deploy
       - name: Create deploy package
         run: |
           mkdir -p packaged
           zip -r packaged/app.zip . \
-            -x "*/.git/*" \
-               ".git/*" \
-               "antenv/*" \
-               "venv/*" \
-               ".venv/*" \
-               "uploads/*" \
-               "__pycache__/*" \
-               "*.pyc"
+            -x "*/.git/*" ".git/*" "uploads/*" "venv/*" ".venv/*" "antenv/*" "__pycache__/*" "*.pyc"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
